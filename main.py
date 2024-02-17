@@ -2,6 +2,7 @@ import discord
 import yaml
 import os
 import sys
+import re
 from server_settings import serversettings
 from commands import sscommands
 from datetime import datetime, timezone
@@ -36,8 +37,27 @@ async def on_message(message):
     server = serversettings(serverid=serverid)
     prefix = server.prefix()
     isowner = False
+#detects if message author is owner
     if message.guild and message.author.id == message.guild.owner_id:
         isowner = True
+#detecting if message has prefix
     if arg1.startswith(prefix):
         await sscommands(client, server, serverid, channelid, args, isowner)
+#auto hidden link detection system (needs to be updated)
+    pattern = r'\[(.*?)\]\((.*?)\)'
+    match = re.search(pattern, message.content)
+    if match:
+        extracted_text = match.group(1)
+        extracted_link = match.group(2)
+        await message.reply(f"!WARNING HIDDEN URL!\nTEXT: {extracted_text}\nURL: {extracted_link}")
+# some logic to help with discord SRV compatibility
+#    pattern2 = r'\[([^]]+)\]([^ ]*) »\s*(.*)'
+#    match = re.match(pattern2, message.content)
+#    if match:
+#        group_brackets = match.group(1)
+#        information = match.group(2)
+#        after_arrow = match.group(3)
+#        print("match found", group_brackets, information, after_arrow)
+#    else:
+#        print("match not found")
 client.run(BOTTOKEN)
